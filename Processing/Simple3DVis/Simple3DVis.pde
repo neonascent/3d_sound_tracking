@@ -1,6 +1,8 @@
 import processing.opengl.*;
 import saito.objloader.*;
 import processing.serial.*;
+import toxi.geom.*;
+import toxi.processing.*;
 
 float[][] lines_direction;
 float[] lines_length;
@@ -10,6 +12,8 @@ int nextLine;
 int dieSpeed= 1;
 int lines = 500;
 
+Quaternion q;
+
 Serial myPort;  // Create object from Serial class
 int val;      // Data received from the serial port
 
@@ -17,6 +21,8 @@ int val;      // Data received from the serial port
 int linefeed = 10;   // Linefeed in ASCII
 int numSensors = 3;  // we will be expecting for reading data from four sensors
 float angles[];       // array to read the 4 values
+
+Quaternion setup;
 
 // model
 OBJModel model;
@@ -30,6 +36,9 @@ void setup() {
   model.scale(100);
   model.translateToCenter();
 
+  q = new Quaternion();
+  setup = new Quaternion(Quaternion.createFromEuler( radians(90), radians(180), radians(90)));
+
   setupLines();
   noStroke();
   //sphereDetail(12);
@@ -41,7 +50,7 @@ void setup() {
 }
 
 void setupLines() {
-  lines_direction = new float[lines][3];
+  lines_direction = new float[lines][4];
   lines_length = new float[lines];
   lines_life = new float[lines];
   nextLine = 0;
@@ -50,39 +59,33 @@ void setupLines() {
     lines_direction[i][0] = 0f;
     lines_direction[i][1] = 0f;
     lines_direction[i][2] = 0f;
+    lines_direction[i][3] = 0f;
     lines_length[i] = 0f;
     lines_life[i] = 0f;
   }
-
-  lines_direction[0][0] = 0;
-  lines_direction[0][1] = 0;
-  lines_direction[0][2] = 0;
-  lines_length[0] = 400;
-  lines_life[0] = 200;
 }
 
 void drawLines() {
   for (int i = 0; i < lines; i++) {
     if (lines_life[i] > 0.1) { 
       pushMatrix();
-      rotateX(lines_direction[i][0]);
-      rotateZ(lines_direction[i][1]);
-      rotateY(lines_direction[i][2]);
+      rotate(lines_direction[i][0], lines_direction[i][1], lines_direction[i][2], lines_direction[i][3]);
       stroke(255, lines_life[i]);
       lines_life[i] -= dieSpeed;
-      line(0, 0, 0, lines_length[i], 0, 0);
+      line(0, 0, -20, lines_length[i], 0, -20);
       popMatrix();
     }
   }
 }
 
-void addLine(float a, float b, float c, float volume) {
+void addLine(float a, float b, float c, float d, float volume) {
 
   nextLine = (nextLine+1) % lines;
 
   lines_direction[nextLine][0] = a;
   lines_direction[nextLine][1] = b;
   lines_direction[nextLine][2] = c;
+  lines_direction[nextLine][3] = d;
   lines_life[nextLine] = map(volume, 0, 1024, 0, 255);
   lines_length[nextLine] = map(volume, 0, 1024, 100, 500);
 } 
@@ -93,22 +96,24 @@ void draw() {
     background(0);
     translate(width / 2, height / 2, -200);
     drawLines();
-    float a = map(angles[0], -180, 180, -PI, PI);
-    float b = map(angles[1], -180, 180, -PI, PI);
-    float c = map(-angles[2], -180, 180, -PI, PI);
 
-    addLine(a, b, c, angles[3]);
+    q = new Quaternion(angles[0], angles[1], angles[2], angles[3]);
 
 
-    rotateX(a);
-    rotateZ(b);
-    rotateY(c);
-    
+    float o[] = setup.multiply(q).toAxisAngle();
+
+    // add sound line
+    addLine(o[0], o[1], o[2], o[3], angles[4]);    
+
+    pushMatrix();
+    rotate(o[0], o[1], o[2], o[3]);
+
     noStroke();
     noFill();
     //stroke(150, 50);
     model.draw();
     // box(200,100,170);
+    popMatrix();
   }
 }
 
