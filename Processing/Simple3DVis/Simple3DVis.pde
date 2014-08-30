@@ -45,8 +45,8 @@ void setup() {
   // Print a list of the serial ports, for debugging purposes:
   printArray(Serial.list());
   // choose port
-  // String portName = "/dev/tty.usbserial-A9ED5JZZ";
-  String portName = "/dev/tty.HC-06-DevB";
+  // String portName = "/dev/tty.HC-06-DevB"; // mac
+  String portName = "COM42";
   myPort = new Serial(this, portName, 9600);
 }
 
@@ -127,7 +127,9 @@ void draw() {
     fill(180, 255);
     stroke(255, 255);
     //model.draw();
-     box(170,100,50);
+    float size = angles[4]/10;
+    box(size,size,size);
+   //  box(170,100,50);
     popMatrix();
   }
 }

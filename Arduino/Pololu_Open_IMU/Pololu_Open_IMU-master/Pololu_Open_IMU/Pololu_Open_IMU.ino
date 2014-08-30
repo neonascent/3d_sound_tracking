@@ -42,6 +42,10 @@ Based on the Madgwick algorithm found at:
 #define inverseYRange (float)(2.0 / (compassYMax - compassYMin))
 #define inverseZRange (float)(2.0 / (compassZMax - compassZMin))
 
+// rolling volume average
+int maxValue;
+int minValue;
+int volume; // this roughly goes from 0 to 700
 
 
 L3G gyro;
@@ -71,6 +75,7 @@ float accToFilterX,accToFilterY,accToFilterZ;
 int i;
 
 void setup(){
+  resetValues();
   Serial.begin(9600);
   Serial.println("Keeping the device still and level during startup will yeild the best results");
   Wire.begin();
@@ -102,6 +107,10 @@ void loop(){
     AHRSupdate(&G_Dt);
   }
 
+
+  // update volume data
+  updateVolume();
+
   if (millis() - printTimer > 50){
     printTimer = millis();
     //GetEuler();
@@ -112,9 +121,7 @@ void loop(){
 //    Serial.print(roll);
 //    Serial.print(",");
 //    Serial.println(yaw);
-
-    int volume = analogRead(A1);
-
+    volume = maxValue - minValue;
     Serial.print("!QUAT:");
     Serial.print(q0);
     Serial.print(",");
@@ -125,8 +132,28 @@ void loop(){
     Serial.print(q3);
     Serial.print(",");
     Serial.println(volume);
+    resetValues();
   }
 
+}
+
+void updateVolume() {
+    int currentValue = analogRead(A1);
+
+    if (currentValue < minValue) {
+        minValue = currentValue;
+    } 
+    if (currentValue > maxValue) {
+        maxValue = currentValue;
+    }
+}
+
+
+    
+void resetValues()
+{
+    maxValue = 0;
+    minValue = 1024;
 }
 
 void IMUinit(){
