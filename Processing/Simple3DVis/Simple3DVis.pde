@@ -28,7 +28,7 @@ Quaternion setup;
 OBJModel model;
 
 void setup() {
-  size(700, 700, OPENGL);
+  size(1280, 800, OPENGL);
 
   model = new OBJModel(this, "m.obj", "relative", QUADS);
   model.enableDebug();
@@ -45,7 +45,8 @@ void setup() {
   // Print a list of the serial ports, for debugging purposes:
   printArray(Serial.list());
   // choose port
-  String portName = "COM42";
+  // String portName = "/dev/tty.usbserial-A9ED5JZZ";
+  String portName = "/dev/tty.HC-06-DevB";
   myPort = new Serial(this, portName, 9600);
 }
 
@@ -66,17 +67,31 @@ void setupLines() {
 }
 
 void drawLines() {
+  int offset = 0; // -20
   for (int i = 0; i < lines; i++) {
     if (lines_life[i] > 0.1) { 
       pushMatrix();
       rotate(lines_direction[i][0], lines_direction[i][1], lines_direction[i][2], lines_direction[i][3]);
-      stroke(255, lines_life[i]);
+      noStroke();
+      //stroke(255, lines_life[i]);
+      fill(255, lines_life[i]);
       lines_life[i] -= dieSpeed;
-      line(0, 0, -20, lines_length[i], 0, -20);
+      
+
+      beginShape(TRIANGLES);
+      vertex(85, 0, offset);
+      vertex(85+lines_length[i], 0, offset-20);
+      vertex(85+lines_length[i], 0, offset+20);
+      endShape();     
+
+
+       //line(0, 0, offset, lines_length[i], 0, offset);
       popMatrix();
     }
   }
 }
+
+
 
 void addLine(float a, float b, float c, float d, float volume) {
 
@@ -95,6 +110,7 @@ void draw() {
     lights();
     background(0);
     translate(width / 2, height / 2, -200);
+
     drawLines();
 
     q = new Quaternion(angles[0], angles[1], angles[2], angles[3]);
@@ -108,11 +124,10 @@ void draw() {
     pushMatrix();
     rotate(o[0], o[1], o[2], o[3]);
 
-    noStroke();
-    noFill();
-    //stroke(150, 50);
-    model.draw();
-    // box(200,100,170);
+    fill(180, 255);
+    stroke(255, 255);
+    //model.draw();
+     box(170,100,50);
     popMatrix();
   }
 }
