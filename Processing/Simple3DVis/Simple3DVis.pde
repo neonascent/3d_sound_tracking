@@ -1,5 +1,4 @@
 import processing.opengl.*;
-import saito.objloader.*;
 import processing.serial.*;
 import toxi.geom.*;
 import toxi.processing.*;
@@ -24,17 +23,10 @@ float angles[];       // array to read the 4 values
 
 Quaternion setup;
 
-// model
-OBJModel model;
 
 void setup() {
   size(1280, 800, OPENGL);
 
-  model = new OBJModel(this, "m.obj", "relative", QUADS);
-  model.enableDebug();
-
-  model.scale(100);
-  model.translateToCenter();
 
   q = new Quaternion();
   setup = new Quaternion(Quaternion.createFromEuler( radians(90), radians(180), radians(90)));
@@ -126,7 +118,6 @@ void draw() {
 
     fill(180, 255);
     stroke(255, 255);
-    //model.draw();
     float size = angles[4]/10;
     box(size,size,size);
    //  box(170,100,50);
