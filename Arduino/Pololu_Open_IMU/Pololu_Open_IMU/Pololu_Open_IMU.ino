@@ -32,20 +32,16 @@ Based on the Madgwick algorithm found at:
  
  */
 
-#define compassXMax 334.0f
-#define compassXMin -506.0f
-#define compassYMax 302.0f
-#define compassYMin -489.0f
-#define compassZMax 333.0f
-#define compassZMin -355.0f
+#define compassXMax 216.0f
+#define compassXMin -345.0f
+#define compassYMax 210.0f
+#define compassYMin -347.0f
+#define compassZMax 249.0f
+#define compassZMin -305.0f
 #define inverseXRange (float)(2.0 / (compassXMax - compassXMin))
 #define inverseYRange (float)(2.0 / (compassYMax - compassYMin))
 #define inverseZRange (float)(2.0 / (compassZMax - compassZMin))
 
-// rolling volume average
-int maxValue;
-int minValue;
-int volume; // this roughly goes from 0 to 700
 
 
 L3G gyro;
@@ -75,8 +71,7 @@ float accToFilterX,accToFilterY,accToFilterZ;
 int i;
 
 void setup(){
-  resetValues();
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Keeping the device still and level during startup will yeild the best results");
   Wire.begin();
   TWBR = ((F_CPU / 400000) - 16) / 2;//set the I2C speed to 400KHz
@@ -107,53 +102,18 @@ void loop(){
     AHRSupdate(&G_Dt);
   }
 
-
-  // update volume data
-  updateVolume();
-
   if (millis() - printTimer > 50){
     printTimer = millis();
-    //GetEuler();
-//    Serial.print(printTimer);
-//    Serial.print(",");
-//    Serial.print(pitch);
-//    Serial.print(",");
-//    Serial.print(roll);
-//    Serial.print(",");
-//    Serial.println(yaw);
-    volume = maxValue - minValue;
-    Serial.print("!QUAT:");
-    Serial.print(q0);
+    GetEuler();
+    Serial.print(printTimer);
     Serial.print(",");
-    Serial.print(q1);
+    Serial.print(pitch);
     Serial.print(",");
-    Serial.print(q2);
+    Serial.print(roll);
     Serial.print(",");
-    Serial.print(q3);
-    Serial.print(",");
-    Serial.println(volume);
-    resetValues();
+    Serial.println(yaw);
   }
 
-}
-
-void updateVolume() {
-    int currentValue = analogRead(A1);
-
-    if (currentValue < minValue) {
-        minValue = currentValue;
-    } 
-    if (currentValue > maxValue) {
-        maxValue = currentValue;
-    }
-}
-
-
-    
-void resetValues()
-{
-    maxValue = 0;
-    minValue = 1024;
 }
 
 void IMUinit(){
