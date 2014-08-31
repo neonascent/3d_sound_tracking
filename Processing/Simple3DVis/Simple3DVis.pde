@@ -29,7 +29,7 @@ void setup() {
 
 
   q = new Quaternion();
-  setup = new Quaternion(Quaternion.createFromEuler( radians(90), radians(180), radians(90)));
+  setup = new Quaternion(Quaternion.createFromEuler( radians(180), radians(180), radians(90)));
 
   setupLines();
   noStroke();
@@ -38,7 +38,7 @@ void setup() {
   printArray(Serial.list());
   // choose port
   // String portName = "/dev/tty.HC-06-DevB"; // mac
-  String portName = "COM42";
+  String portName = "COM8";
   myPort = new Serial(this, portName, 9600);
 }
 
@@ -103,23 +103,25 @@ void draw() {
     background(0);
     translate(width / 2, height / 2, -200);
 
+
     drawLines();
 
-    q = new Quaternion(angles[0], angles[1], angles[2], angles[3]);
+    q = new Quaternion(Quaternion.createFromEuler(radians(angles[0]),-radians(angles[2]),-radians(angles[1])));
+    
 
 
     float o[] = setup.multiply(q).toAxisAngle();
+    //float o[] = q.toAxisAngle();
 
     // add sound line
-    addLine(o[0], o[1], o[2], o[3], angles[4]);    
+    addLine(o[0], o[1], o[2], o[3], angles[3]);    
 
     pushMatrix();
     rotate(o[0], o[1], o[2], o[3]);
-
-    fill(180, 255);
+    fill(180, 255); 
     stroke(255, 255);
-    float size = angles[4]/10;
-    box(size,size,size);
+    float size = 30+ angles[3]/20;
+    box(size*3,size*2,size);
    //  box(170,100,50);
     popMatrix();
   }
@@ -137,7 +139,6 @@ void serialEvent(Serial myPort) {
   if (myString != null) {
 
     myString = trim(myString);
-
     // split the string at the commas
     // and convert the sections into integers:
     String[] parts = split(myString, ':');

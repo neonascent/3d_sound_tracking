@@ -32,17 +32,20 @@ Based on the Madgwick algorithm found at:
  
  */
 
-#define compassXMax 216.0f
-#define compassXMin -345.0f
-#define compassYMax 210.0f
-#define compassYMin -347.0f
-#define compassZMax 249.0f
-#define compassZMin -305.0f
+#define compassXMax 296.0f
+#define compassXMin -461.0f
+#define compassYMax 315.0f
+#define compassYMin -465.0f
+#define compassZMax 177.0f
+#define compassZMin -492.0f
 #define inverseXRange (float)(2.0 / (compassXMax - compassXMin))
 #define inverseYRange (float)(2.0 / (compassYMax - compassYMin))
 #define inverseZRange (float)(2.0 / (compassZMax - compassZMin))
 
-
+// rolling volume average
+int maxValue;
+int minValue;
+int volume; // this roughly goes from 0 to 700
 
 L3G gyro;
 LSM303 compass;
@@ -71,7 +74,8 @@ float accToFilterX,accToFilterY,accToFilterZ;
 int i;
 
 void setup(){
-  Serial.begin(115200);
+  resetValues();
+  Serial.begin(9600);
   Serial.println("Keeping the device still and level during startup will yeild the best results");
   Wire.begin();
   TWBR = ((F_CPU / 400000) - 16) / 2;//set the I2C speed to 400KHz
@@ -101,19 +105,45 @@ void loop(){
     gyro.read();
     AHRSupdate(&G_Dt);
   }
+  
+  // update volume data
+  updateVolume();
+  
 
   if (millis() - printTimer > 50){
     printTimer = millis();
+    volume = maxValue - minValue;
     GetEuler();
-    Serial.print(printTimer);
-    Serial.print(",");
+    Serial.print("!ANGLE:");
     Serial.print(pitch);
     Serial.print(",");
     Serial.print(roll);
     Serial.print(",");
-    Serial.println(yaw);
+    Serial.print(yaw);
+    Serial.print(",");
+    Serial.println(volume);
+    resetValues();
   }
 
+}
+
+void updateVolume() {
+    int currentValue = analogRead(A1);
+
+    if (currentValue < minValue) {
+        minValue = currentValue;
+    } 
+    if (currentValue > maxValue) {
+        maxValue = currentValue;
+    }
+}
+
+
+    
+void resetValues()
+{
+    maxValue = 0;
+    minValue = 1024;
 }
 
 void IMUinit(){
